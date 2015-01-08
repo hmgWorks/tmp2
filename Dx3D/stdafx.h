@@ -26,6 +26,7 @@
 #include <string>
 #include <assert.h>
 #include <d3dx9.h>
+#include <tuple>
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "d3dx9.lib")

@@ -92,6 +92,7 @@
     <ClInclude Include="cGroup.h" />
     <ClInclude Include="cIndexCube.h" />
     <ClInclude Include="cMainGame.h" />
+    <ClInclude Include="cMeshGroup.h" />
     <ClInclude Include="cMtlTex.h" />
     <ClInclude Include="cObject.h" />
     <ClInclude Include="cObjLoader.h" />
@@ -113,6 +114,7 @@
     <ClCompile Include="cGroup.cpp" />
     <ClCompile Include="cIndexCube.cpp" />
     <ClCompile Include="cMainGame.cpp" />
+    <ClCompile Include="cMeshGroup.cpp" />
     <ClCompile Include="cMtlTex.cpp" />
     <ClCompile Include="cObject.cpp" />
     <ClCompile Include="cObjLoader.cpp" />

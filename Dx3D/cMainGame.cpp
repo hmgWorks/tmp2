@@ -11,6 +11,7 @@
 #include "cMtlTex.h"
 
 #include "cAseLoader.h"
+#include "cMeshGroup.h"
 
 cMainGame::cMainGame(void)
 	: m_pGrid(NULL)
@@ -72,8 +73,8 @@ void cMainGame::Setup()
 	cAseLoader cAseLoader;
 	std::vector<LPD3DXMESH> aa;
 
-	cAseLoader.Load(aa, std::string("../../Resources/ase/woman/"), std::string("woman_01_all.ASE"));
-
+	cAseLoader.Load(m_vecMeshGroup, std::string("../../Resources/ase/woman/"), std::string("woman_01_all.ASE"));
+	/*cAseLoader.Load(m_vecMeshGroup, std::string("../../Resources/ase/woman/"), std::string("aa.txt"));*/
 	
 	D3DXMATRIXA16 matWorld;
 	D3DXMATRIXA16 matS, matR;
@@ -155,9 +156,20 @@ void cMainGame::Render()
 	g_pD3DDevice->BeginScene();
 
 	// 그림을 그린다.
-	g_pD3DDevice->SetRenderState(D3DRS_LIGHTING, false);
-	m_pGrid->Render();
-
+	//g_pD3DDevice->SetRenderState(D3DRS_LIGHTING, true);
+	//m_pGrid->Render();
+	g_pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
+	g_pD3DDevice->SetRenderState(D3DRS_LIGHTING, true);
+	
+	g_pD3DDevice->LightEnable(0, true);
+	D3DXMATRIXA16 matWorld;
+	D3DXMatrixIdentity(&matWorld);
+	g_pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);
+	//g_pD3DDevice->SetFVF(ST_PNT_VERTEX::FVF);
+	for (auto p : m_vecMeshGroup)
+	{
+		p->Render();
+	}
 	/*D3DXMATRIXA16 matWorld;
 	D3DXMatrixIdentity(&matWorld);
 	g_pD3DDevice->SetTransform(D3DTS_WORLD, &matWorld);*/

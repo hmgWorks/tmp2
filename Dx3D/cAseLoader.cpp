@@ -3,6 +3,7 @@
 #include "Asciitok.h"
 #include "cMtlTex.h"
 #include <regex>
+#include "cMeshGroup.h"
 
 cAseLoader::cAseLoader()
 {
@@ -12,7 +13,7 @@ cAseLoader::~cAseLoader()
 {
 }
 
-void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::string file)
+void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::string file)
 {
 	FILE* pFile;	
 	std::vector<cMtlTex*>	vecMtlTex;
@@ -27,9 +28,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 		while (!feof(pFile))
 		{
 			fgets(read_line, 1024, pFile);
-			sscanf(read_line, "%s", token);			
-			
-						
+			sscanf(read_line, "%s", token);								
 #pragma region ReadMaterialList
 			if (strcmp(token, ID_MATERIAL_LIST) == 0)
 			{
@@ -47,7 +46,8 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 
 					if (strcmp(token, ID_MATERIAL) == 0)
 					{
-						while (strcmp(token, "}") != 0)
+						std::regex r(R"(^\t\}\n$)");
+						while (/*strcmp(token, "}") != 0*/!(std::regex_match(std::string(read_line), r)))
 						{
 							fgets(read_line, 1024, pFile);
 							sscanf(read_line, "%s", token);
@@ -58,7 +58,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								newMtlTex->stMtl.Ambient.r = r;
 								newMtlTex->stMtl.Ambient.g = g;
 								newMtlTex->stMtl.Ambient.b = b;
-								newMtlTex->stMtl.Ambient.r = 1.0f;
+								newMtlTex->stMtl.Ambient.a = 1.0f;
 							}
 							else if (strcmp(token, ID_DIFFUSE) == 0)
 							{
@@ -67,7 +67,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								newMtlTex->stMtl.Diffuse.r = r;
 								newMtlTex->stMtl.Diffuse.g = g;
 								newMtlTex->stMtl.Diffuse.b = b;
-								newMtlTex->stMtl.Diffuse.r = 1.0f;
+								newMtlTex->stMtl.Diffuse.a = 1.0f;
 							}
 							else if (strcmp(token, ID_SPECULAR) == 0)
 							{
@@ -76,7 +76,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								newMtlTex->stMtl.Specular.r = r;
 								newMtlTex->stMtl.Specular.g = g;
 								newMtlTex->stMtl.Specular.b = b;
-								newMtlTex->stMtl.Specular.r = 1.0f;
+								newMtlTex->stMtl.Specular.a = 1.0f;
 							}
 							else if (strcmp(token, ID_MAP_DIFFUSE) == 0)
 							{
@@ -94,7 +94,8 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 										{
 											texturefile = m[1].str();
 										}
-										newMtlTex->pTex = g_pTextureManager->GetTexture((folder + texturefile));
+										std::string texturefullfile = folder + texturefile;
+										newMtlTex->pTex = g_pTextureManager->GetTexture(texturefullfile);
 									}
 									else
 									{
@@ -131,8 +132,9 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 				std::vector<std::vector<int>>	vecTVF;
 				std::vector<ST_PNT_VERTEX>		vecVertex;
 
+				cMeshGroup* mesh;
 				//std::regex ipb
-
+				//cMeshGroup* group;
 				std::regex r(R"(^\}\n$)");
 				while (/*strcmp(token, "}") != 0*/!(std::regex_match(std::string(read_line), r)))
 				{
@@ -189,8 +191,8 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								for (int i = 0; i < nNumTVertex; i++)
 								{
 									fgets(read_line, 1024, pFile);
-									sscanf(read_line, "%*s %*d %f %f", &u, &v);
-									vecVT.push_back(D3DXVECTOR2(u, 1.0f - v));
+									sscanf(read_line, "%*s %*d %f %f %*f", &u, &v);
+									vecVT.push_back(D3DXVECTOR2(u, (1.0f - v)));
 								}
 							}
 							else if (strcmp(token, ID_MESH_NUMTVFACES) == 0)
@@ -204,7 +206,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								for (int i = 0; i < nNumTVFaces; i++)
 								{
 									fgets(read_line, 1024, pFile);
-									sscanf(read_line, "%*s %*s %*s %d %*s %d %*s %d", &a, &c, &b);
+									sscanf(read_line, "%*s %*d %d %d %d", &a, &c, &b);
 									vecTextureIndex[0] = a;
 									vecTextureIndex[1] = b;
 									vecTextureIndex[2] = c;
@@ -220,7 +222,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 								for (int i = 0; i < nNumFaces; i++)
 								{
 									fgets(read_line, 1024, pFile);
-									sscanf(read_line, "%s", &token);
+									sscanf(read_line, "%s", token);
 									if (strcmp(token, ID_MESH_FACENORMAL) == 0)
 									{
 										for (int j = 0; j < 3; j++)
@@ -234,8 +236,8 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 												v.p = vecV[vecVF[i][j]];
 												v.t = vecVT[vecTVF[i][j]];
 												v.n = D3DXVECTOR3(x, y, z);
+												vecVertex.push_back(v);
 										}
-										vecVertex.push_back(v);
 									}
 								}
 							
@@ -250,22 +252,72 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 					else if (strcmp(token, ID_MATERIAL_REF) == 0)
 					{
 						sscanf(read_line, "%*s %d", &nMtlRef);
+						//LPD3DXMESH m_pMesh;
+						//HRESULT hr = D3DXCreateMeshFVF(vecVertex.size() / 3, vecVertex.size(), D3DXMESH_MANAGED,
+						//	ST_PNT_VERTEX::FVF, g_pD3DDevice, &m_pMesh);
+						//assert(hr == D3D_OK && "mesh error");
+
+						//ST_PNT_VERTEX* pV = NULL;
+						//m_pMesh->LockVertexBuffer(0, (LPVOID*)&pV);
+						//{
+						//	memcpy(pV, &vecVertex[0], sizeof(ST_PNT_VERTEX)*vecVertex.size());
+						//}
+						//m_pMesh->UnlockVertexBuffer();
+
+						//WORD* pI = NULL;
+						//m_pMesh->LockIndexBuffer(0, (LPVOID*)&pI);
+						//{
+						//	for (int i = 0; i < vecVertex.size(); i++)
+						//	{
+						//		pI[i] = i;
+						//	}
+						//}
+						//m_pMesh->UnlockIndexBuffer();
+
+						//DWORD* pA = NULL;
+						//m_pMesh->LockAttributeBuffer(0, &pA);
+						//{
+						//	for (int i = 0; i < vecVertex.size() / 3; i++)
+						//	{
+						//		pA[i] = 0;
+						//	}
+						//}
+						//m_pMesh->UnlockAttributeBuffer();
+
+						//std::vector<DWORD> vecAdjBuffer(vecVertex.size());
+						////char ch[1024];
+						//
+						//m_pMesh->GenerateAdjacency(0.0f, &vecAdjBuffer[0]);
+
+						//m_pMesh->OptimizeInplace(
+						//	D3DXMESHOPT_ATTRSORT |
+						//	D3DXMESHOPT_COMPACT |
+						//	D3DXMESHOPT_VERTEXCACHE,
+						//	&vecAdjBuffer[0], 0, 0, 0);
+
+						//group = new cMeshGroup;
+						//group->Setup(m_pMesh, vecMtlTex[nMtlRef]);
+						//meshs.push_back(group);
+						mesh = new cMeshGroup;
+						mesh->Setup(vecVertex.size(),vecVertex, vecMtlTex[nMtlRef]);
+						meshs.push_back(mesh);
+						//SAFE_RELEASE(m_pMesh);
+
 					}
 					else
 					{
 						continue;
 					}
 				}
-				vecVertex;
+				
 			}
 #pragma endregion
-
 			else
 			{
 				continue;
 			}
-		}
-		
+		}		
 	}
 	fclose(pFile);
+	//create mesh
 }

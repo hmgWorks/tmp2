@@ -8,6 +8,7 @@ class cGroup;
 class iMap;
 class cIndexCube;
 class cMtlTex;
+class cMeshGroup;
 
 class cMainGame
 {
@@ -22,6 +23,7 @@ private:
 	std::vector<cGroup*>	m_vecSurface;
 	LPD3DXMESH				m_pMesh;
 	std::vector<cMtlTex*>	m_vecMtlTex;
+	std::vector<cMeshGroup*>m_vecMeshGroup;
 
 public:
 	cMainGame(void);
