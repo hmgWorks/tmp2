@@ -1,0 +1,1 @@
+			*BITMAP ". / woman / hair_woman_01.jpg"
