@@ -122,6 +122,8 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 				int nNumTVertex = 0;
 				int nNumTVFaces = 0;
 
+				int nMtlRef = -1;
+
 				std::vector<D3DXVECTOR3>		vecV;
 				std::vector<D3DXVECTOR2>		vecVT;
 				std::vector<D3DXVECTOR3>		vecVN;
@@ -129,13 +131,17 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 				std::vector<std::vector<int>>	vecTVF;
 				std::vector<ST_PNT_VERTEX>		vecVertex;
 
-				while (strcmp(token, "}") != 0)
+				//std::regex ipb
+
+				std::regex r(R"(^\}\n$)");
+				while (/*strcmp(token, "}") != 0*/!(std::regex_match(std::string(read_line), r)))
 				{
 					fgets(read_line, 1024, pFile);
 					sscanf(read_line, "%s", token);
 					if (strcmp(token, ID_MESH) == 0)
 					{
-						while (strcmp(token, "}") != 0)
+						std::regex r(R"(^\t\}\n$)");
+						while (/*strcmp(token, "}") != 0*/!(std::regex_match(std::string(read_line), r)))
 						{
 							fgets(read_line, 1024, pFile);
 							sscanf(read_line, "%s", token);
@@ -169,14 +175,15 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 									vecVertixIndex[1] = b;
 									vecVertixIndex[2] = c;
 									vecVF.push_back(vecVertixIndex);
-									vecVertixIndex.clear();									
+									vecVertixIndex.clear();	
+									vecVertixIndex.resize(3);
 								}
 							}
 							else if (strcmp(token, ID_MESH_NUMTVERTEX) == 0)
 							{
 								sscanf(read_line, "%*s %d", &nNumTVertex);
 							}
-							else if (strcmp(token, ID_MESH_VERTEX_LIST) == 0)
+							else if (strcmp(token, ID_MESH_TVERTLIST) == 0)
 							{
 								float u = 0.0f, v = 0.0f;
 								for (int i = 0; i < nNumTVertex; i++)
@@ -203,10 +210,11 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 									vecTextureIndex[2] = c;
 									vecTVF.push_back(vecTextureIndex);
 									vecTextureIndex.clear();
+									vecTextureIndex.resize(3);
 								}
 							}
 							else if (strcmp(token, ID_MESH_NORMALS) == 0)
-							{
+							{							
 								ST_PNT_VERTEX v;
 								float x = 0.0f, y = 0.0f, z = 0.0f;
 								for (int i = 0; i < nNumFaces; i++)
@@ -219,13 +227,18 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 										{
 											fgets(read_line, 1024, pFile);
 											sscanf(read_line, "%*s %*d %f %f %f", &x, &z, &y);
-											v.p = vecV[vecVF[i][j]];
-											v.t = vecVT[vecTVF[i][j]];
-											v.n = D3DXVECTOR3(x, y, z);
+											if (nNumTVertex == 0)
+											{
+												continue;
+											}
+												v.p = vecV[vecVF[i][j]];
+												v.t = vecVT[vecTVF[i][j]];
+												v.n = D3DXVECTOR3(x, y, z);
 										}
 										vecVertex.push_back(v);
 									}
 								}
+							
 							}
 							else
 							{
@@ -236,14 +249,14 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 					}
 					else if (strcmp(token, ID_MATERIAL_REF) == 0)
 					{
-
+						sscanf(read_line, "%*s %d", &nMtlRef);
 					}
 					else
 					{
 						continue;
 					}
 				}
-
+				vecVertex;
 			}
 #pragma endregion
 
@@ -252,6 +265,7 @@ void cAseLoader::Load(std::vector<LPD3DXMESH>& meshs, std::string folder, std::s
 				continue;
 			}
 		}
+		
 	}
 	fclose(pFile);
 }

@@ -72,7 +72,7 @@ void cMainGame::Setup()
 	cAseLoader cAseLoader;
 	std::vector<LPD3DXMESH> aa;
 
-	cAseLoader.Load(aa, std::string("../../Resources/ase/woman/"), std::string("woman_01_all.ASEa"));
+	cAseLoader.Load(aa, std::string("../../Resources/ase/woman/"), std::string("woman_01_all.ASE"));
 
 	
 	D3DXMATRIXA16 matWorld;
