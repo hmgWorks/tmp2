@@ -111,6 +111,7 @@ void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::
 						}
 					}
 					vecMtlTex[i] = newMtlTex;
+					
 				}
 
 			}
@@ -219,8 +220,11 @@ void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::
 							{							
 								ST_PNT_VERTEX v;
 								float x = 0.0f, y = 0.0f, z = 0.0f;
+								int index[3] = { 0, 2, 1 };
+								
 								for (int i = 0; i < nNumFaces; i++)
 								{
+
 									fgets(read_line, 1024, pFile);
 									sscanf(read_line, "%s", token);
 									if (strcmp(token, ID_MESH_FACENORMAL) == 0)
@@ -233,11 +237,14 @@ void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::
 											{
 												continue;
 											}
+												D3DXVECTOR3 vv = { x, y, z };
+												D3DXVec3Normalize(&vv, &vv);
 												v.p = vecV[vecVF[i][j]];
 												v.t = vecVT[vecTVF[i][j]];
-												v.n = D3DXVECTOR3(x, y, z);
+												vecVN.push_back(vv);
 												vecVertex.push_back(v);
 										}
+
 									}
 								}
 							
@@ -251,57 +258,10 @@ void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::
 					}
 					else if (strcmp(token, ID_MATERIAL_REF) == 0)
 					{
-						sscanf(read_line, "%*s %d", &nMtlRef);
-						//LPD3DXMESH m_pMesh;
-						//HRESULT hr = D3DXCreateMeshFVF(vecVertex.size() / 3, vecVertex.size(), D3DXMESH_MANAGED,
-						//	ST_PNT_VERTEX::FVF, g_pD3DDevice, &m_pMesh);
-						//assert(hr == D3D_OK && "mesh error");
-
-						//ST_PNT_VERTEX* pV = NULL;
-						//m_pMesh->LockVertexBuffer(0, (LPVOID*)&pV);
-						//{
-						//	memcpy(pV, &vecVertex[0], sizeof(ST_PNT_VERTEX)*vecVertex.size());
-						//}
-						//m_pMesh->UnlockVertexBuffer();
-
-						//WORD* pI = NULL;
-						//m_pMesh->LockIndexBuffer(0, (LPVOID*)&pI);
-						//{
-						//	for (int i = 0; i < vecVertex.size(); i++)
-						//	{
-						//		pI[i] = i;
-						//	}
-						//}
-						//m_pMesh->UnlockIndexBuffer();
-
-						//DWORD* pA = NULL;
-						//m_pMesh->LockAttributeBuffer(0, &pA);
-						//{
-						//	for (int i = 0; i < vecVertex.size() / 3; i++)
-						//	{
-						//		pA[i] = 0;
-						//	}
-						//}
-						//m_pMesh->UnlockAttributeBuffer();
-
-						//std::vector<DWORD> vecAdjBuffer(vecVertex.size());
-						////char ch[1024];
-						//
-						//m_pMesh->GenerateAdjacency(0.0f, &vecAdjBuffer[0]);
-
-						//m_pMesh->OptimizeInplace(
-						//	D3DXMESHOPT_ATTRSORT |
-						//	D3DXMESHOPT_COMPACT |
-						//	D3DXMESHOPT_VERTEXCACHE,
-						//	&vecAdjBuffer[0], 0, 0, 0);
-
-						//group = new cMeshGroup;
-						//group->Setup(m_pMesh, vecMtlTex[nMtlRef]);
-						//meshs.push_back(group);
+						sscanf(read_line, "%*s %d", &nMtlRef);						
 						mesh = new cMeshGroup;
 						mesh->Setup(vecVertex.size(),vecVertex, vecMtlTex[nMtlRef]);
 						meshs.push_back(mesh);
-						//SAFE_RELEASE(m_pMesh);
 
 					}
 					else
@@ -319,5 +279,9 @@ void cAseLoader::Load(std::vector<cMeshGroup*>& meshs, std::string folder, std::
 		}		
 	}
 	fclose(pFile);
+	for (auto p : vecMtlTex)
+	{
+		SAFE_RELEASE(p);
+	}
 	//create mesh
 }

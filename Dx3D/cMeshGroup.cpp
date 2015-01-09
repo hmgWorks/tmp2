@@ -73,7 +73,7 @@ void cMeshGroup::Setup(LPD3DXMESH mesh, cMtlTex* mtltex)
 void cMeshGroup::Render()
 {
 	//g_pD3DDevice->SetFVF(ST_PNT_VERTEX::FVF);
-	g_pD3DDevice->SetTexture(0, m_pMtlTex->pTex);
+	g_pD3DDevice->SetTexture(0, NULL/*m_pMtlTex->pTex*/);
 	g_pD3DDevice->SetMaterial(&m_pMtlTex->stMtl);
 	m_pMesh->DrawSubset(0);
 }

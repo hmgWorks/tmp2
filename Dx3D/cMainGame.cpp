@@ -158,6 +158,8 @@ void cMainGame::Render()
 	// 그림을 그린다.
 	//g_pD3DDevice->SetRenderState(D3DRS_LIGHTING, true);
 	//m_pGrid->Render();
+	g_pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+	//g_pD3DDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_FLAT);
 	g_pD3DDevice->SetRenderState(D3DRS_NORMALIZENORMALS, true);
 	g_pD3DDevice->SetRenderState(D3DRS_LIGHTING, true);
 	
